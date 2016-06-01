@@ -2,6 +2,7 @@ authorized_keys = ["ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHfJER+eGjDa0PCjN9V+VS
                    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+eE2iEP0XcVfCRlTPm/xrb6oTgv5iI8LQCz2JGwthLMW2sVxQyzaKAbqmdZJRsNqiuMerZ06xSurVLRPLEjHJmChT5wBX14sBRESwhCQ+SIByce05BZ8iKVphZdtmthAXBpQHS+JAIAyO3nk9dcbeZEy0vfCGLvVOtQ6/1MSxtMJ23ECvMYqBjRnPuvWlC70kmKhOe/bJgSgp+7JW/YXoX62BzQ8HO4e5e8QQy9QDY3uuQbKTCnoPqkat14ARRr/Q63JMGhe6jEQamNCSgYH/b13uc/4xDSMeTfUJes3kWO8J7REWmAoausZ+LPT9hUJF+5pzuh2V2VOY/0Ks40PX jenkins@admin1"]
 
 Vagrant.configure(2) do |config|
+  config.vm.provision "shell", privileged: true, inline: 'echo "*/10 * * * * sudo /usr/sbin/ntpdate -u 0.north-america.pool.ntp.org 1.north-america.pool.ntp.org 2.north-america.pool.ntp.org 3.north-america.pool.ntp.org" | crontab -'
 
   [31819, 31820].each do |port|
     config.vm.define "ubuntu-16.04-32bit-#{port}" do |node|

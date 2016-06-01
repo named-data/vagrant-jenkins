@@ -4,21 +4,21 @@ authorized_keys = ["ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHfJER+eGjDa0PCjN9V+VS
 Vagrant.configure(2) do |config|
 
   [31819, 31820].each do |port|
-    config.vm.define "Ubuntu-16.04-32bit-ua-maestro-#{port}" do |node|
+    config.vm.define "ubuntu-16.04-32bit-#{port}" do |node|
       node.vm.box = "ubuntu/xenial32"
       node.vm.network "forwarded_port", guest: 22, host: port
 
       node.vm.provider "virtualbox" do |vb|
-        vb.name = "Ubuntu-16.04-32bit-ua-maestro-#{port}"
+        vb.name = "ubuntu-16.04-32bit-#{port}"
         vb.memory = "2500"
         vb.use_vdi = true
         vb.customize 'pre-boot', ['modifyhd', :disk0, '--resize', '40000']
       end
-      
+
       node.vm.provision "shell", privileged: true, inline: <<EOF
 echo "127.0.0.1 ubuntu-xenial" >> /etc/hosts
 apt-get purge -y --auto-remove cloud-init
-apt-get update 
+apt-get update
 apt-get install -y build-essential openjdk-9-jre-headless
 
 useradd -d /home/jenkins -m -s /bin/bash jenkins
@@ -37,4 +37,27 @@ EOF
       end
     end
   end
+
+  [10001, 10002].each do |port|
+    config.vm.define "osx-11-#{port}" do |node|
+      node.vm.box = "ndn-jenkins/osx-10.11"
+      node.vm.network "forwarded_port", guest: 22, host: port
+
+      node.vm.provider "virtualbox" do |vb|
+        vb.name = "osx-11-#{port}"
+        vb.memory = "4000"
+        vb.linked_clone = true
+      end
+
+      node.vm.provision "shell", privileged: false, inline: <<EOF
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew update
+EOF
+
+      authorized_keys.each do |key|
+        node.vm.provision "shell", inline: "echo \"#{key}\" >> /Users/jenkins/.ssh/authorized_keys"
+      end
+    end
+  end
+
 end

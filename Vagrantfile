@@ -48,6 +48,7 @@ EOF
         vb.name = "osx-11-#{port}"
         vb.memory = "4000"
         vb.linked_clone = true
+	vb.customize 'pre-boot', ['modifyvm', :id, '--audio', 'none']
       end
 
       node.vm.provision "shell", privileged: false, inline: <<EOF

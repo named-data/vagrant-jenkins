@@ -51,6 +51,7 @@ EOF
       end
 
       node.vm.provision "shell", privileged: false, inline: <<EOF
+defaults -currentHost write com.apple.screensaver idleTime 0
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 brew update
 EOF

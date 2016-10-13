@@ -4,6 +4,8 @@ authorized_keys = ["ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHfJER+eGjDa0PCjN9V+VS
 Vagrant.configure(2) do |config|
   config.vm.provision "shell", privileged: true, inline: 'echo "*/10 * * * * sudo /usr/sbin/ntpdate -u 0.north-america.pool.ntp.org 1.north-america.pool.ntp.org 2.north-america.pool.ntp.org 3.north-america.pool.ntp.org" | crontab -'
 
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
   [31819, 31820].each do |port|
     config.vm.define "ubuntu-16.04-32bit-#{port}" do |node|
       node.vm.box = "ubuntu/xenial32"

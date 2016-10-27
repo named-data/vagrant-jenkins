@@ -89,4 +89,28 @@ EOF
     end
   end
 
+  [10021, 10022].each do |port|
+    config.vm.define "osx-10-#{port}" do |node|
+      node.vm.box = "ndn-jenkins/osx-10.10"
+      node.vm.network "forwarded_port", guest: 22, host: port
+
+      node.vm.provider "virtualbox" do |vb|
+        vb.name = "osx-10-#{port}"
+        vb.memory = "4000"
+        vb.linked_clone = true
+	vb.customize 'pre-boot', ['modifyvm', :id, '--audio', 'none']
+      end
+
+      node.vm.provision "shell", privileged: false, inline: <<EOF
+defaults -currentHost write com.apple.screensaver idleTime 0
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew update
+EOF
+
+      authorized_keys.each do |key|
+        node.vm.provision "shell", inline: "echo \"#{key}\" >> /Users/jenkins/.ssh/authorized_keys"
+      end
+    end
+  end
+
 end

@@ -113,4 +113,65 @@ EOF
     end
   end
 
+  [20001, 20002].each do |port|
+    config.vm.define "ubuntu-14.04-64bit-#{port}" do |node|
+      node.vm.box = "boxcutter/ubuntu1404"
+      node.vm.network "forwarded_port", guest: 22, host: port
+
+      node.vm.provider "virtualbox" do |vb|
+        vb.name = "ubuntu-14.04-64bit-#{port}"
+        vb.memory = "2500"
+      end
+
+      node.vm.provision "shell", privileged: true, inline: <<EOF
+apt-get update
+apt-get install -y build-essential openjdk-9-jre-headless
+
+useradd -d /home/jenkins -m -s /bin/bash jenkins
+echo "jenkins ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-jenkins
+chmod 440 /etc/sudoers.d/90-jenkins
+
+mkdir /home/jenkins/.ssh
+touch /home/jenkins/.ssh/authorized_keys
+chown -R jenkins:jenkins /home/jenkins/.ssh
+chmod 600 /home/jenkins/.ssh/authorized_keys
+chmod 700 /home/jenkins/.ssh
+EOF
+
+      authorized_keys.each do |key|
+        node.vm.provision "shell", inline: "echo \"#{key}\" >> /home/jenkins/.ssh/authorized_keys"
+      end
+    end
+  end
+  
+  [20011, 20012].each do |port|
+    config.vm.define "ubuntu-16.10-64bit-#{port}" do |node|
+      node.vm.box = "boxcutter/ubuntu1610"
+      node.vm.network "forwarded_port", guest: 22, host: port
+
+      node.vm.provider "virtualbox" do |vb|
+        vb.name = "ubuntu-16.10-64bit-#{port}"
+        vb.memory = "2500"
+      end
+
+      node.vm.provision "shell", privileged: true, inline: <<EOF
+apt-get update
+apt-get install -y build-essential openjdk-9-jre-headless
+
+useradd -d /home/jenkins -m -s /bin/bash jenkins
+echo "jenkins ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-jenkins
+chmod 440 /etc/sudoers.d/90-jenkins
+
+mkdir /home/jenkins/.ssh
+touch /home/jenkins/.ssh/authorized_keys
+chown -R jenkins:jenkins /home/jenkins/.ssh
+chmod 600 /home/jenkins/.ssh/authorized_keys
+chmod 700 /home/jenkins/.ssh
+EOF
+
+      authorized_keys.each do |key|
+        node.vm.provision "shell", inline: "echo \"#{key}\" >> /home/jenkins/.ssh/authorized_keys"
+      end
+    end
+  end  
 end

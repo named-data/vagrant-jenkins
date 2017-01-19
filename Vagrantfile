@@ -125,7 +125,8 @@ EOF
 
       node.vm.provision "shell", privileged: true, inline: <<EOF
 apt-get update
-apt-get install -y build-essential openjdk-9-jre-headless
+apt-get upgrade
+apt-get install -y build-essential git python-setuptools openjdk-7-jre-headless
 
 useradd -d /home/jenkins -m -s /bin/bash jenkins
 echo "jenkins ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-jenkins
@@ -136,6 +137,11 @@ touch /home/jenkins/.ssh/authorized_keys
 chown -R jenkins:jenkins /home/jenkins/.ssh
 chmod 600 /home/jenkins/.ssh/authorized_keys
 chmod 700 /home/jenkins/.ssh
+
+git clone https://github.com/linux-test-project/lcov
+(cd lcov; make install)
+
+easy_install pip gcovr
 EOF
 
       authorized_keys.each do |key|
@@ -156,7 +162,8 @@ EOF
 
       node.vm.provision "shell", privileged: true, inline: <<EOF
 apt-get update
-apt-get install -y build-essential openjdk-9-jre-headless
+apt-get upgrade
+apt-get install -y build-essential git python-setuptools openjdk-9-jre-headless
 
 useradd -d /home/jenkins -m -s /bin/bash jenkins
 echo "jenkins ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-jenkins
@@ -167,6 +174,11 @@ touch /home/jenkins/.ssh/authorized_keys
 chown -R jenkins:jenkins /home/jenkins/.ssh
 chmod 600 /home/jenkins/.ssh/authorized_keys
 chmod 700 /home/jenkins/.ssh
+
+git clone https://github.com/linux-test-project/lcov
+(cd lcov; make install)
+
+easy_install pip gcovr
 EOF
 
       authorized_keys.each do |key|

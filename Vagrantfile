@@ -73,6 +73,7 @@ EOF
       node.vm.provider "virtualbox" do |vb|
         vb.name = "osx-12-#{port}"
         vb.memory = "4000"
+        vb.cpus = 2
         vb.linked_clone = true
 	vb.customize 'pre-boot', ['modifyvm', :id, '--audio', 'none']
       end
@@ -164,24 +165,21 @@ EOF
   end 
 
   [10021, 10022].each do |port|
-    config.vm.define "ubuntu-17.04-64bit-#{port}" do |node|
-      node.vm.box = "ubuntu/zesty64"
+    config.vm.define "ubuntu-19.04-64bit-#{port}" do |node|
+      node.vm.box = "bento/ubuntu-19.04"
       node.vm.network "forwarded_port", guest: 22, host: port
 
       node.vm.provider "virtualbox" do |vb|
-        vb.name = "ubuntu-17.04-64bit-#{port}"
-        vb.memory = "2500"
-        vb.use_vdi = true
-        vb.customize 'pre-boot', ['modifyhd', :disk0, '--resize', '40000']
+        vb.name = "ubuntu-19.04-64bit-#{port}"
+        vb.memory = "4096"
+        vb.cpus = "2"
       end
 
       node.vm.provision "shell", privileged: true, inline: <<EOF
-echo "127.0.0.1 ubuntu-zesty" >> /etc/hosts
-apt-get purge -y --auto-remove cloud-init
 apt-get update
-apt-get install -y build-essential openjdk-9-jre-headless
+apt-get install -y git libboost-all-dev build-essential libssl-dev default-jre pkg-config libsqlite3-dev
 
-useradd -d /home/jenkins -m -s /bin/bash jenkins
+useradd -d /home/jenkins -m -p 8aefij34waef9 -s /bin/bash jenkins
 echo "jenkins ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-jenkins
 chmod 440 /etc/sudoers.d/90-jenkins
 

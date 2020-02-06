@@ -219,4 +219,55 @@ EOF
       end
     end
   end
+
+  [20051, 20052].each do |port|
+    config.vm.define "osx-15-#{port}" do |node|
+      node.vm.box = "ashiq/macOS-10.15"
+      node.vm.network "forwarded_port", guest: 22, host: port
+
+      node.vm.provider "virtualbox" do |vb|
+        vb.name = "osx-15-#{port}"
+        vb.cpus = 2
+        vb.memory = "6000"
+	vb.customize 'pre-boot', ['modifyvm', :id, '--audio', 'none']
+      end
+
+      authorized_keys.each do |key|
+        node.vm.provision "shell", inline: "echo \"#{key}\" >> /Users/jenkins/.ssh/authorized_keys"
+      end
+    end
+  end
+
+  [20060].each do |port|
+    config.vm.define "ubuntu-18.04-64bit-#{port}" do |node|
+      node.vm.box = "bento/ubuntu-18.04"
+      node.vm.network "forwarded_port", guest: 22, host: port
+
+      node.vm.provider "virtualbox" do |vb|
+        vb.name = "ubuntu-18.04-64bit-#{port}"
+        vb.memory = "4096"
+        vb.cpus = "2"
+      end
+
+      node.vm.provision "shell", privileged: true, inline: <<EOF
+apt-get update
+apt-get install -y git libboost-all-dev build-essential libssl-dev default-jre pkg-config libsqlite3-dev
+
+useradd -d /home/jenkins -m -p 8aefij34waef9 -s /bin/bash jenkins
+echo "jenkins ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-jenkins
+chmod 440 /etc/sudoers.d/90-jenkins
+
+mkdir /home/jenkins/.ssh
+touch /home/jenkins/.ssh/authorized_keys
+chown -R jenkins:jenkins /home/jenkins/.ssh
+chmod 600 /home/jenkins/.ssh/authorized_keys
+chmod 700 /home/jenkins/.ssh
+EOF
+
+      authorized_keys.each do |key|
+        node.vm.provision "shell", inline: "echo \"#{key}\" >> /home/jenkins/.ssh/authorized_keys"
+      end
+    end
+  end
+
 end

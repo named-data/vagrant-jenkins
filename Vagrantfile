@@ -222,7 +222,7 @@ EOF
 
   [20051, 20052].each do |port|
     config.vm.define "osx-15-#{port}" do |node|
-      node.vm.box = "ashiq/macOS-10.15"
+      node.vm.box = "ndn-jenkins/osx-10.15"
       node.vm.network "forwarded_port", guest: 22, host: port
 
       node.vm.provider "virtualbox" do |vb|

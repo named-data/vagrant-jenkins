@@ -27,6 +27,7 @@ $centos_provisioning = <<EOF
   chmod 440 /etc/sudoers.d/90-jenkins
   
   mkdir /home/jenkins/.ssh
+  touch /home/jenkins/.ssh/authorized_keys
   chown -R jenkins:jenkins /home/jenkins/.ssh
   chmod 700 /home/jenkins/.ssh
   chmod 600 /home/jenkins/.ssh/authorized_keys

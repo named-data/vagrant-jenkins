@@ -37,13 +37,14 @@ agents = [
   [31829, "ubuntu-18.04-64bit", "bento/ubuntu-18.04", $ubuntu_provisioning],
   [31830, "ubuntu-18.04-64bit", "bento/ubuntu-18.04", $ubuntu_provisioning],
   [31821, "ubuntu-doxygen-18.04-64bit", "bento/ubuntu-18.04", $ubuntu_provisioning],
-  [31822, "ubuntu-doxygen-18.04-64bit", "bento/ubuntu-18.04", $ubuntu_provisioning],
+  # [31822, "ubuntu-doxygen-18.04-64bit", "bento/ubuntu-18.04", $ubuntu_provisioning],
 
   [31850, "ubuntu-18.04-32bit", "ashiq/bionic32",     $ubuntu_provisioning],
   [31851, "ubuntu-18.04-32bit", "ashiq/bionic32",     $ubuntu_provisioning],
 
   [31835, "ubuntu-20.04-64bit", "bento/ubuntu-20.04", $ubuntu_provisioning],
   [31836, "ubuntu-20.04-64bit", "bento/ubuntu-20.04", $ubuntu_provisioning],
+  [31839, "ubuntu-20.04-64bit", "bento/ubuntu-20.04", $ubuntu_provisioning],
 
   [31837, "ubuntu-21.04-64bit", "bento/ubuntu-21.04", $ubuntu_provisioning],
   [31838, "ubuntu-21.04-64bit", "bento/ubuntu-21.04", $ubuntu_provisioning],

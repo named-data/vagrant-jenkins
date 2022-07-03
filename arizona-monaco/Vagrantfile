@@ -1,39 +1,45 @@
-SECRET = ENV['SECRET']
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
 
-authorized_keys = ["ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHfJER+eGjDa0PCjN9V+VSYjMO9CiCkuTEi7w0Fio85PL/qBI67L3HmUkIFsIcA5fLiheClfeBvQPhojPpPrJSUD/3/iDgqLW/dWTQ64bpInuOCZJtZbSkVnbeVVyAxO7CF/0yh7W0NOg+IallnCimOEsDGhma686FYcvvOweCJ+w3bYA9fPwNGTBxsc++hTs/mR/WYehc1gECVZ1zE2EBNF+N9Uov+p+SuFkccpCVFM5tVzduNuQsWy6TRjoUK/q/P4BxhV8M/E2lbWK6SZ+ieOgQsC7UxBel5a6B7G//MqO4ZfHJEtpy5LuiuZMxjl/pdbfWlIwshjtnplH4BN35 jenkins@main",
-                   "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+eE2iEP0XcVfCRlTPm/xrb6oTgv5iI8LQCz2JGwthLMW2sVxQyzaKAbqmdZJRsNqiuMerZ06xSurVLRPLEjHJmChT5wBX14sBRESwhCQ+SIByce05BZ8iKVphZdtmthAXBpQHS+JAIAyO3nk9dcbeZEy0vfCGLvVOtQ6/1MSxtMJ23ECvMYqBjRnPuvWlC70kmKhOe/bJgSgp+7JW/YXoX62BzQ8HO4e5e8QQy9QDY3uuQbKTCnoPqkat14ARRr/Q63JMGhe6jEQamNCSgYH/b13uc/4xDSMeTfUJes3kWO8J7REWmAoausZ+LPT9hUJF+5pzuh2V2VOY/0Ks40PX jenkins@admin1"]
-
-$osx_provisioning = <<EOF
-EOF
-
-agents = [
-  [31842, "osx-10.15", "ndn-jenkins/osx-10.15", $osx_provisioning],
-  [31843, "osx-10.15", "ndn-jenkins/osx-10.15", $osx_provisioning],
+authorized_keys = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG21+L2op3VAN+Te+X78FUIBmmHSFN61hh0TkmF2PatW jenkins@ndn-jenkins",
+  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHfJER+eGjDa0PCjN9V+VSYjMO9CiCkuTEi7w0Fio85PL/qBI67L3HmUkIFsIcA5fLiheClfeBvQPhojPpPrJSUD/3/iDgqLW/dWTQ64bpInuOCZJtZbSkVnbeVVyAxO7CF/0yh7W0NOg+IallnCimOEsDGhma686FYcvvOweCJ+w3bYA9fPwNGTBxsc++hTs/mR/WYehc1gECVZ1zE2EBNF+N9Uov+p+SuFkccpCVFM5tVzduNuQsWy6TRjoUK/q/P4BxhV8M/E2lbWK6SZ+ieOgQsC7UxBel5a6B7G//MqO4ZfHJEtpy5LuiuZMxjl/pdbfWlIwshjtnplH4BN35 jenkins@ndn-jenkins",
+  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+eE2iEP0XcVfCRlTPm/xrb6oTgv5iI8LQCz2JGwthLMW2sVxQyzaKAbqmdZJRsNqiuMerZ06xSurVLRPLEjHJmChT5wBX14sBRESwhCQ+SIByce05BZ8iKVphZdtmthAXBpQHS+JAIAyO3nk9dcbeZEy0vfCGLvVOtQ6/1MSxtMJ23ECvMYqBjRnPuvWlC70kmKhOe/bJgSgp+7JW/YXoX62BzQ8HO4e5e8QQy9QDY3uuQbKTCnoPqkat14ARRr/Q63JMGhe6jEQamNCSgYH/b13uc/4xDSMeTfUJes3kWO8J7REWmAoausZ+LPT9hUJF+5pzuh2V2VOY/0Ks40PX jenkins@admin1"
 ]
 
-Vagrant.configure(2) do |config|
-  config.vm.provision "shell", privileged: true, inline: 'echo "*/10 * * * * sudo /usr/sbin/ntpdate -u 0.north-america.pool.ntp.org 1.north-america.pool.ntp.org 2.north-america.pool.ntp.org 3.north-america.pool.ntp.org" | crontab -'
+agents = [
+  [31842, "osx-10.15", "ndn-jenkins/osx-10.15"],
+  [31843, "osx-10.15", "ndn-jenkins/osx-10.15"],
+]
 
+Vagrant.configure("2") do |config|
+  config.vm.box_check_update = false
+
+  # Disable sharing /vagrant with the host.
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
+  # Sync the system clock every hour.
+  # This assumes that ntp is installed via Homebrew.
+  config.vm.provision "shell", inline: 'echo "0 * * * * sudo /usr/local/sbin/ntpdate -u ntp1.cs.arizona.edu ntp2.cs.arizona.edu" | crontab -'
+
   agents.each do |agent|
-    config.vm.define "agent-#{agent[1]}-#{agent[0]}" do |node|
-      node.vm.box = "#{agent[2]}"
-      node.vm.network "forwarded_port", guest: 22, host: agent[0]
-      node.disksize.size = "75GB"
+    # ID of the machine. Must be unique.
+    vmid = "#{agent[1]}-#{agent[0]}"
+
+    config.vm.define "agent-#{vmid}" do |node|
+      node.vm.box = agent[2]
+      node.vm.network "forwarded_port", guest: 22, host: agent[0], id: "ssh"
 
       node.vm.provider "virtualbox" do |vb|
-        vb.name = "agent-#{agent[1]}-#{agent[0]}"
-        vb.memory = "4096"
-        vb.cpus = "2"
-	vb.customize 'pre-boot', ['modifyvm', :id, '--audio', 'none']
+        vb.name = "agent-#{vmid}"
+        vb.cpus = 2
+        vb.memory = 6144
+        vb.customize "pre-boot", ["modifyvm", :id, "--audio", "none"]
       end
 
-      node.vm.provision "shell", privileged: true, inline: agent[3]
-
-      authorized_keys.each do |key|
-        node.vm.provision "shell", inline: "echo \"#{key}\" >> /home/jenkins/.ssh/authorized_keys"
-      end
+      node.vm.provision "shell", inline: <<~SHELL
+        echo '#{authorized_keys.join("\n")}' >> /Users/jenkins/.ssh/authorized_keys
+      SHELL
     end
   end
 end

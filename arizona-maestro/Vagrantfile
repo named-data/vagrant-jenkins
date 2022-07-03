@@ -1,80 +1,90 @@
-SECRET = ENV['SECRET']
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
 
-authorized_keys = ["ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHfJER+eGjDa0PCjN9V+VSYjMO9CiCkuTEi7w0Fio85PL/qBI67L3HmUkIFsIcA5fLiheClfeBvQPhojPpPrJSUD/3/iDgqLW/dWTQ64bpInuOCZJtZbSkVnbeVVyAxO7CF/0yh7W0NOg+IallnCimOEsDGhma686FYcvvOweCJ+w3bYA9fPwNGTBxsc++hTs/mR/WYehc1gECVZ1zE2EBNF+N9Uov+p+SuFkccpCVFM5tVzduNuQsWy6TRjoUK/q/P4BxhV8M/E2lbWK6SZ+ieOgQsC7UxBel5a6B7G//MqO4ZfHJEtpy5LuiuZMxjl/pdbfWlIwshjtnplH4BN35 jenkins@main",
-                   "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+eE2iEP0XcVfCRlTPm/xrb6oTgv5iI8LQCz2JGwthLMW2sVxQyzaKAbqmdZJRsNqiuMerZ06xSurVLRPLEjHJmChT5wBX14sBRESwhCQ+SIByce05BZ8iKVphZdtmthAXBpQHS+JAIAyO3nk9dcbeZEy0vfCGLvVOtQ6/1MSxtMJ23ECvMYqBjRnPuvWlC70kmKhOe/bJgSgp+7JW/YXoX62BzQ8HO4e5e8QQy9QDY3uuQbKTCnoPqkat14ARRr/Q63JMGhe6jEQamNCSgYH/b13uc/4xDSMeTfUJes3kWO8J7REWmAoausZ+LPT9hUJF+5pzuh2V2VOY/0Ks40PX jenkins@admin1"]
+authorized_keys = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG21+L2op3VAN+Te+X78FUIBmmHSFN61hh0TkmF2PatW jenkins@ndn-jenkins",
+  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHfJER+eGjDa0PCjN9V+VSYjMO9CiCkuTEi7w0Fio85PL/qBI67L3HmUkIFsIcA5fLiheClfeBvQPhojPpPrJSUD/3/iDgqLW/dWTQ64bpInuOCZJtZbSkVnbeVVyAxO7CF/0yh7W0NOg+IallnCimOEsDGhma686FYcvvOweCJ+w3bYA9fPwNGTBxsc++hTs/mR/WYehc1gECVZ1zE2EBNF+N9Uov+p+SuFkccpCVFM5tVzduNuQsWy6TRjoUK/q/P4BxhV8M/E2lbWK6SZ+ieOgQsC7UxBel5a6B7G//MqO4ZfHJEtpy5LuiuZMxjl/pdbfWlIwshjtnplH4BN35 jenkins@ndn-jenkins",
+]
 
-$ubuntu_provisioning = <<EOF
-  apt-get update
-  apt-get install -y git libboost-all-dev build-essential libssl-dev default-jre pkg-config libsqlite3-dev
-  
-  useradd -d /home/jenkins -m -p #{SECRET} -s /bin/bash jenkins
-  echo "jenkins ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-jenkins
-  chmod 440 /etc/sudoers.d/90-jenkins
-  
-  mkdir /home/jenkins/.ssh
-  touch /home/jenkins/.ssh/authorized_keys
-  chown -R jenkins:jenkins /home/jenkins/.ssh
-  chmod 600 /home/jenkins/.ssh/authorized_keys
-  chmod 700 /home/jenkins/.ssh
+$centos_provisioning = <<~'EOF'
+  dnf -y install git java-11-openjdk-headless
 EOF
 
-$centos_provisioning = <<EOF
-  yum -y update
-  dnf install -y git java-11-openjdk-headless
-  
-  useradd -d /home/jenkins -m -p #{SECRET} -s /bin/bash jenkins
-  echo "jenkins ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-jenkins
-  chmod 440 /etc/sudoers.d/90-jenkins
-  
-  mkdir /home/jenkins/.ssh
-  touch /home/jenkins/.ssh/authorized_keys
-  chown -R jenkins:jenkins /home/jenkins/.ssh
-  chmod 700 /home/jenkins/.ssh
-  chmod 600 /home/jenkins/.ssh/authorized_keys
+$debian_provisioning = <<~'EOF'
+  sed -i -e '/dns-nameserver /d' /etc/network/interfaces
+  ifdown eth0
+  ifup eth0
+  apt-get -q update
+  apt-get -qy install git openjdk-11-jre-headless
+EOF
+
+$ubuntu_provisioning = <<~'EOF'
+  sed -i -e 's,//\w\+\.archive\.ubuntu\.com,//mirror.arizona.edu,' /etc/apt/sources.list
+  apt-get -q update
+  apt-get -qy install git openjdk-11-jre-headless
 EOF
 
 agents = [
-  [31829, "ubuntu-18.04-64bit", "bento/ubuntu-18.04", $ubuntu_provisioning],
-  # [31830, "ubuntu-18.04-64bit", "bento/ubuntu-18.04", $ubuntu_provisioning],
-  [31821, "ubuntu-doxygen-18.04-64bit", "bento/ubuntu-18.04", $ubuntu_provisioning],
-  [31822, "ubuntu-doxygen-18.04-64bit", "bento/ubuntu-18.04", $ubuntu_provisioning],
+  [31890, "centos9",          "generic/centos9s",     "vm1",  $centos_provisioning],
+  [31891, "centos9",          "generic/centos9s",     "vm2",  $centos_provisioning],
 
-  [31850, "ubuntu-18.04-32bit", "ashiq/bionic32",     $ubuntu_provisioning],
-  [31851, "ubuntu-18.04-32bit", "ashiq/bionic32",     $ubuntu_provisioning],
+  [31810, "debian11-i386",    "generic-x32/debian11", "vm1",  $debian_provisioning],
+  [31811, "debian11-i386",    "generic-x32/debian11", "vm2",  $debian_provisioning],
 
-  [31835, "ubuntu-20.04-64bit", "bento/ubuntu-20.04", $ubuntu_provisioning],
-  [31836, "ubuntu-20.04-64bit", "bento/ubuntu-20.04", $ubuntu_provisioning],
-  [31839, "ubuntu-20.04-64bit", "bento/ubuntu-20.04", $ubuntu_provisioning],
+  #[31860, "ubuntu18.04",      "bento/ubuntu-18.04",   "vm1",  $ubuntu_provisioning],
 
-  [31837, "ubuntu-21.04-64bit", "bento/ubuntu-21.04", $ubuntu_provisioning],
-  [31838, "ubuntu-21.04-64bit", "bento/ubuntu-21.04", $ubuntu_provisioning],
+  [31820, "ubuntu20.04",      "bento/ubuntu-20.04",   "vm2",  $ubuntu_provisioning],
+  [31821, "ubuntu20.04",      "bento/ubuntu-20.04",   "vm1",  $ubuntu_provisioning],
 
-  [31833, "centos8-64bit",      "bento/centos-8",     $centos_provisioning],
-  [31834, "centos8-64bit",      "bento/centos-8",     $centos_provisioning],
+  [31880, "ubuntu22.04",      "bento/ubuntu-22.04",   "vm2",  $ubuntu_provisioning],
+  [31881, "ubuntu22.04",      "bento/ubuntu-22.04",   "vm1",  $ubuntu_provisioning],
+  [31888, "ubuntu22.04-docs", "bento/ubuntu-22.04",   "vm2",  $ubuntu_provisioning],
 ]
 
-Vagrant.configure(2) do |config|
-  config.vm.provision "shell", privileged: true, inline: 'echo "*/10 * * * * sudo /usr/sbin/ntpdate -u 0.north-america.pool.ntp.org 1.north-america.pool.ntp.org 2.north-america.pool.ntp.org 3.north-america.pool.ntp.org" | crontab -'
-
+Vagrant.configure("2") do |config|
+  # Disable sharing /vagrant with the host.
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
   agents.each do |agent|
-    config.vm.define "agent-#{agent[1]}-#{agent[0]}" do |node|
-      node.vm.box = "#{agent[2]}"
-      node.vm.network "forwarded_port", guest: 22, host: agent[0]
-      node.disksize.size = "75GB"
+    # ID of the machine. Must be unique.
+    vmid = "#{agent[1]}-#{agent[0]}"
+
+    config.vm.define "agent-#{vmid}" do |node|
+      node.vm.box = agent[2]
+      node.vm.hostname = vmid.delete "^0-9A-Za-z-"
+      node.vm.network "forwarded_port", guest: 22, host: agent[0], id: "ssh"
 
       node.vm.provider "virtualbox" do |vb|
-        vb.name = "agent-#{agent[1]}-#{agent[0]}"
-        vb.memory = "4096"
-        vb.cpus = "2"
+        vb.name = "agent-#{vmid}"
+
+        vb.cpus = 2
+        vb.memory = 6144
+        vb.default_nic_type = "virtio"
+
+        # Disable host I/O caching.
+        # https://www.virtualbox.org/manual/ch05.html#iocaching
+        vb.customize "pre-boot", ["storagectl", :id, "--name", "SATA Controller", "--hostiocache", "off"]
+
+        # Specify the folder where VirtualBox will store the machine data.
+        # Warning: this is a global setting, so make sure you create one machine at a time.
+        # https://www.virtualbox.org/manual/ch10.html#vboxconfigdata-machine-folder
+        folder = agent[3].nil? ? "default" : File.join("", agent[3], "jenkins")
+        vb.customize "pre-import", ["setproperty", "machinefolder", folder]
       end
 
-      node.vm.provision "shell", privileged: true, inline: agent[3]
+      node.vm.provision "shell", inline: agent[4]
 
-      authorized_keys.each do |key|
-        node.vm.provision "shell", inline: "echo \"#{key}\" >> /home/jenkins/.ssh/authorized_keys"
-      end
+      node.vm.provision "shell", inline: <<~SHELL
+        useradd --create-home --shell /bin/bash jenkins
+        echo 'jenkins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/jenkins
+        chmod 440 /etc/sudoers.d/jenkins
+
+        mkdir -pv /home/jenkins/.ssh
+        echo '#{authorized_keys.join("\n")}' >> /home/jenkins/.ssh/authorized_keys
+        chown -cR jenkins: /home/jenkins/.ssh
+        chmod -c 700 /home/jenkins/.ssh
+        chmod -c 600 /home/jenkins/.ssh/authorized_keys
+      SHELL
     end
   end
 end

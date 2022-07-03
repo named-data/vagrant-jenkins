@@ -1,7 +1,4 @@
-Vagrant environment for NDN Jenkins slaves
-==========================================
-
-As of right now, some of the provisioning  (specifically, 16.04) require a patched version of [vagrant](https://github.com/cawka/vagrant)
+# Vagrant environment for NDN Jenkins
 
 ## Usage
 
@@ -12,4 +9,3 @@ To start all configured VMs:
 To get status of the configured VMs:
 
     vagrant status
-

@@ -84,6 +84,8 @@ Vagrant.configure("2") do |config|
         chown -cR jenkins: /home/jenkins/.ssh
         chmod -c 700 /home/jenkins/.ssh
         chmod -c 600 /home/jenkins/.ssh/authorized_keys
+
+        echo -e "\\U1F511 SSH host key: $(cut -d' ' -f-2 /etc/ssh/ssh_host_ed25519_key.pub)"
       SHELL
     end
   end

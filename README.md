@@ -1,11 +1,33 @@
 # Vagrant environment for NDN Jenkins
 
-## Usage
+This repository contains several Vagrantfiles that are used in the deployment of the
+[Jenkins](https://www.jenkins.io/) cluster for the [NDN project](https://named-data.net/).
 
-To start all configured VMs:
+## Basic usage
 
-    vagrant up
+To see name and status of all machines defined in a Vagrantfile, run the following command
+from the directory containing the Vagrantfile:
 
-To get status of the configured VMs:
+```
+vagrant status
+```
 
-    vagrant status
+To start a VM:
+
+```
+vagrant up [NAME]
+```
+
+To ssh into a running VM:
+
+```
+vagrant ssh [NAME]
+```
+
+To stop a VM:
+
+```
+vagrant halt [NAME]
+```
+
+For more commands and options, see `vagrant --help`.

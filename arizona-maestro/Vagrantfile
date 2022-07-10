@@ -3,25 +3,32 @@
 
 authorized_keys = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG21+L2op3VAN+Te+X78FUIBmmHSFN61hh0TkmF2PatW jenkins@ndn-jenkins",
-  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHfJER+eGjDa0PCjN9V+VSYjMO9CiCkuTEi7w0Fio85PL/qBI67L3HmUkIFsIcA5fLiheClfeBvQPhojPpPrJSUD/3/iDgqLW/dWTQ64bpInuOCZJtZbSkVnbeVVyAxO7CF/0yh7W0NOg+IallnCimOEsDGhma686FYcvvOweCJ+w3bYA9fPwNGTBxsc++hTs/mR/WYehc1gECVZ1zE2EBNF+N9Uov+p+SuFkccpCVFM5tVzduNuQsWy6TRjoUK/q/P4BxhV8M/E2lbWK6SZ+ieOgQsC7UxBel5a6B7G//MqO4ZfHJEtpy5LuiuZMxjl/pdbfWlIwshjtnplH4BN35 jenkins@ndn-jenkins",
 ]
 
 $centos_provisioning = <<~'EOF'
-  dnf -y install git java-11-openjdk-headless
+  dnf -y upgrade
+  dnf -y install git htop java-11-openjdk-headless nano
+  dnf -y autoremove
 EOF
 
 $debian_provisioning = <<~'EOF'
   sed -i -e '/dns-nameserver /d' /etc/network/interfaces
   ifdown eth0
   ifup eth0
-  apt-get -q update
-  apt-get -qy install git openjdk-11-jre-headless
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get -qq update
+  apt-get -qy dist-upgrade
+  apt-get -qy install git htop openjdk-11-jre-headless nano
+  apt-get -qy autoremove
 EOF
 
 $ubuntu_provisioning = <<~'EOF'
   sed -i -e 's,//\w\+\.archive\.ubuntu\.com,//mirror.arizona.edu,' /etc/apt/sources.list
-  apt-get -q update
-  apt-get -qy install git openjdk-11-jre-headless
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get -qq update
+  apt-get -qy dist-upgrade
+  apt-get -qy install git htop openjdk-11-jre-headless nano
+  apt-get -qy autoremove
 EOF
 
 agents = [
@@ -72,7 +79,7 @@ Vagrant.configure("2") do |config|
         vb.customize "pre-import", ["setproperty", "machinefolder", folder]
       end
 
-      node.vm.provision "shell", inline: agent[4]
+      node.vm.provision "shell", inline: agent[4], reboot: true
 
       node.vm.provision "shell", inline: <<~SHELL
         useradd --create-home --shell /bin/bash jenkins

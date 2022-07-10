@@ -6,6 +6,7 @@ authorized_keys = [
 ]
 
 $centos_provisioning = <<~'EOF'
+  dnf -y remove firewalld
   dnf -y upgrade
   dnf -y install git htop java-11-openjdk-headless nano
   dnf -y autoremove

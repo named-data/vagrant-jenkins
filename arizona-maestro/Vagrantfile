@@ -2,34 +2,45 @@
 # vi: set ft=ruby :
 
 authorized_keys = [
+  # Jenkins controller public key
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG21+L2op3VAN+Te+X78FUIBmmHSFN61hh0TkmF2PatW jenkins@ndn-jenkins",
 ]
 
 $centos_provisioning = <<~'EOF'
+  # Do not disable IPv6
   sed -i -ne '/\<disable_ipv6\>/!p; $a net.ipv6.conf.all.disable_ipv6 = 0' /etc/sysctl.conf
+  # Uninstall firewalld because it interferes with NFD's unit tests
   dnf -y remove firewalld
+  # Upgrade everything and install what we need
   dnf -y upgrade
   dnf -y install git htop java-11-openjdk-headless nano
+  # Cleanup
   dnf -y autoremove
 EOF
 
 $debian_provisioning = <<~'EOF'
+  # Respect the DNS servers acquired via DHCP
   sed -i -e '/dns-nameserver /d' /etc/network/interfaces
   ifdown eth0
   ifup eth0
+  # Upgrade everything and install what we need
   export DEBIAN_FRONTEND=noninteractive
   apt-get -qq update
   apt-get -qy dist-upgrade
   apt-get -qy install git htop openjdk-11-jre-headless nano
+  # Cleanup
   apt-get -qy autoremove
 EOF
 
 $ubuntu_provisioning = <<~'EOF'
+  # Use a faster mirror
   sed -i -e 's,//\w\+\.archive\.ubuntu\.com,//mirror.arizona.edu,' /etc/apt/sources.list
+  # Upgrade everything and install what we need
   export DEBIAN_FRONTEND=noninteractive
   apt-get -qq update
   apt-get -qy dist-upgrade
   apt-get -qy install git htop openjdk-11-jre-headless nano
+  # Cleanup
   apt-get -qy autoremove
 EOF
 

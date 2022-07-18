@@ -19,6 +19,8 @@ $centos_provisioning = <<~'EOF'
 EOF
 
 $debian_provisioning = <<~'EOF'
+  # Do not disable IPv6
+  sed -i -ne '/\<disable_ipv6\>/!p; $a net.ipv6.conf.all.disable_ipv6 = 0' /etc/sysctl.conf
   # Respect the DNS servers acquired via DHCP
   sed -i -e '/dns-nameserver /d' /etc/network/interfaces
   ifdown eth0

@@ -77,8 +77,9 @@ Vagrant.configure("2") do |config|
       node.vm.provider "virtualbox" do |vb|
         vb.name = "agent-#{vmid}"
 
-        vb.cpus = 2
-        vb.memory = 6144
+        cpus = agent[1].include?("-docs") ? 2 : 3
+        vb.cpus = cpus
+        vb.memory = 2048 * cpus
         vb.default_nic_type = "virtio"
 
         # Disable host I/O caching.

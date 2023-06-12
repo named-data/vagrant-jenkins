@@ -22,7 +22,7 @@ $debian_provisioning = <<~'EOF'
   # Do not disable IPv6
   sed -i -ne '/\<disable_ipv6\>/!p; $a net.ipv6.conf.all.disable_ipv6 = 0' /etc/sysctl.conf
   # Respect the DNS servers acquired via DHCP
-  sed -i -e '/dns-nameserver /d' /etc/network/interfaces
+  sed -i -Ee '/dns-nameserver /d' /etc/network/interfaces
   ifdown eth0
   ifup eth0
   # Upgrade everything and install what we need
@@ -34,9 +34,28 @@ $debian_provisioning = <<~'EOF'
   apt-get -qy autoremove
 EOF
 
-$ubuntu_provisioning = <<~'EOF'
+$ubuntu20_provisioning = <<~'EOF'
   # Use a faster mirror
-  sed -i -e 's,//\w\+\.archive\.ubuntu\.com,//mirror.arizona.edu,' /etc/apt/sources.list
+  sed -i -Ee 's,//\w+\.archive\.ubuntu\.com,//mirror.arizona.edu,' /etc/apt/sources.list
+  # Upgrade everything and install what we need
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get -qq update
+  apt-get -qy dist-upgrade
+  apt-get -qy install git htop openjdk-11-jre-headless nano
+  # Cleanup
+  apt-get -qy autoremove
+EOF
+
+$ubuntu22_provisioning = <<~'EOF'
+  # Do not disable IPv6
+  sed -i -ne '/\<disable_ipv6\>/!p; $a net.ipv6.conf.all.disable_ipv6 = 0' /etc/sysctl.conf
+  # Respect the DNS servers acquired via DHCP and disable DNSSEC
+  sed -i -Ee '/nameservers:|addresses:/d' /etc/netplan/01-netcfg.yaml
+  netplan apply
+  sed -i -Ee 's/^DNS(SEC)?=/#&/' /etc/systemd/resolved.conf
+  systemctl try-reload-or-restart systemd-resolved.service
+  # Use a faster mirror
+  sed -i -Ee 's,//mirrors\.edge\.kernel\.org,//mirror.arizona.edu,' /etc/apt/sources.list
   # Upgrade everything and install what we need
   export DEBIAN_FRONTEND=noninteractive
   apt-get -qq update
@@ -53,12 +72,12 @@ agents = [
   [31810, "debian11-i386",    "generic-x32/debian11", "vm1",  $debian_provisioning],
   [31811, "debian11-i386",    "generic-x32/debian11", "vm2",  $debian_provisioning],
 
-  [31820, "ubuntu20.04",      "bento/ubuntu-20.04",   "vm2",  $ubuntu_provisioning],
-  [31821, "ubuntu20.04",      "bento/ubuntu-20.04",   "vm1",  $ubuntu_provisioning],
+  [31820, "ubuntu20.04",      "bento/ubuntu-20.04",   "vm2",  $ubuntu20_provisioning],
+  [31821, "ubuntu20.04",      "bento/ubuntu-20.04",   "vm1",  $ubuntu20_provisioning],
 
-  [31880, "ubuntu22.04",      "bento/ubuntu-22.04",   "vm2",  $ubuntu_provisioning],
-  [31881, "ubuntu22.04",      "bento/ubuntu-22.04",   "vm1",  $ubuntu_provisioning],
-  [31888, "ubuntu22.04-docs", "bento/ubuntu-22.04",   "vm2",  $ubuntu_provisioning],
+  [31880, "ubuntu22.04",      "generic/ubuntu2204",   "vm2",  $ubuntu22_provisioning],
+  [31881, "ubuntu22.04",      "generic/ubuntu2204",   "vm1",  $ubuntu22_provisioning],
+  [31888, "ubuntu22.04-docs", "generic/ubuntu2204",   "vm2",  $ubuntu22_provisioning],
 ]
 
 Vagrant.configure("2") do |config|

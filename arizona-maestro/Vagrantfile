@@ -13,7 +13,7 @@ $centos_provisioning = <<~'EOF'
   dnf -y remove firewalld
   # Upgrade everything and install what we need
   dnf -y upgrade
-  dnf -y install git htop java-11-openjdk-headless nano
+  dnf -y install git htop java-17-openjdk-headless nano
   # Cleanup
   dnf -y autoremove
 EOF
@@ -60,7 +60,7 @@ $ubuntu22_provisioning = <<~'EOF'
   export DEBIAN_FRONTEND=noninteractive
   apt-get -qq update
   apt-get -qy dist-upgrade
-  apt-get -qy install git htop openjdk-11-jre-headless nano
+  apt-get -qy install git htop openjdk-17-jre-headless nano
   # Cleanup
   apt-get -qy autoremove
 EOF

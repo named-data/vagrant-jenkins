@@ -18,7 +18,7 @@ $centos_provisioning = <<~'EOF'
   dnf -y autoremove
 EOF
 
-$debian_provisioning = <<~'EOF'
+$debian11_provisioning = <<~'EOF'
   # Do not disable IPv6
   sed -i -ne '/\<disable_ipv6\>/!p; $a net.ipv6.conf.all.disable_ipv6 = 0' /etc/sysctl.conf
   # Respect the DNS servers acquired via DHCP
@@ -28,6 +28,16 @@ $debian_provisioning = <<~'EOF'
   # Use the correct NTP servers
   echo 'NTP=ntp1.cs.arizona.edu ntp2.cs.arizona.edu' >>/etc/systemd/timesyncd.conf
   systemctl reload-or-restart systemd-timesyncd.service
+  # Upgrade everything and install what we need
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get -qq update
+  apt-get -qy dist-upgrade
+  apt-get -qy install git openjdk-17-jre-headless nano
+  # Cleanup
+  apt-get -qy autoremove
+EOF
+
+$debian12_provisioning = <<~'EOF'
   # Upgrade everything and install what we need
   export DEBIAN_FRONTEND=noninteractive
   apt-get -qq update
@@ -72,8 +82,11 @@ agents = [
   [31890, "centos9",          "generic/centos9s",     "vm1",  $centos_provisioning],
   [31891, "centos9",          "generic/centos9s",     "vm2",  $centos_provisioning],
 
-  [31810, "debian11-i386",    "generic-x32/debian11", "vm1",  $debian_provisioning],
-  [31811, "debian11-i386",    "generic-x32/debian11", "vm2",  $debian_provisioning],
+  [31810, "debian11-i386",    "generic-x32/debian11", "vm1",  $debian11_provisioning],
+  [31811, "debian11-i386",    "generic-x32/debian11", "vm2",  $debian11_provisioning],
+
+  [31870, "debian12",         "bento/debian-12",      "vm1",  $debian12_provisioning],
+  [31871, "debian12",         "bento/debian-12",      "vm2",  $debian12_provisioning],
 
   [31820, "ubuntu20.04",      "bento/ubuntu-20.04",   "vm2",  $ubuntu20_provisioning],
   [31821, "ubuntu20.04",      "bento/ubuntu-20.04",   "vm1",  $ubuntu20_provisioning],

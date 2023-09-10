@@ -25,6 +25,9 @@ $debian_provisioning = <<~'EOF'
   sed -i -Ee '/dns-nameserver /d' /etc/network/interfaces
   ifdown eth0
   ifup eth0
+  # Use the correct NTP servers
+  echo 'NTP=ntp1.cs.arizona.edu ntp2.cs.arizona.edu' >>/etc/systemd/timesyncd.conf
+  systemctl reload-or-restart systemd-timesyncd.service
   # Upgrade everything and install what we need
   export DEBIAN_FRONTEND=noninteractive
   apt-get -qq update
@@ -53,7 +56,7 @@ $ubuntu22_provisioning = <<~'EOF'
   sed -i -Ee '/nameservers:|addresses:/d' /etc/netplan/01-netcfg.yaml
   netplan apply
   sed -i -Ee 's/^DNS(SEC)?=/#&/' /etc/systemd/resolved.conf
-  systemctl try-reload-or-restart systemd-resolved.service
+  systemctl reload-or-restart systemd-resolved.service
   # Use a faster mirror
   sed -i -Ee 's,//mirrors\.edge\.kernel\.org,//mirror.arizona.edu,' /etc/apt/sources.list
   # Upgrade everything and install what we need
@@ -116,16 +119,16 @@ Vagrant.configure("2") do |config|
 
       node.vm.provision "shell", inline: <<~SHELL
         useradd --create-home --shell /bin/bash jenkins
-        echo 'jenkins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/jenkins
+        echo 'jenkins ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/jenkins
         chmod 440 /etc/sudoers.d/jenkins
 
         mkdir -pv /home/jenkins/.ssh
-        echo '#{authorized_keys.join("\n")}' >> /home/jenkins/.ssh/authorized_keys
+        echo '#{authorized_keys.join("\n")}' >>/home/jenkins/.ssh/authorized_keys
         chown -cR jenkins: /home/jenkins/.ssh
         chmod -c 700 /home/jenkins/.ssh
         chmod -c 600 /home/jenkins/.ssh/authorized_keys
 
-        cat <<EOF > /etc/ssh/sshd_config.d/auth.conf
+        cat <<EOF >/etc/ssh/sshd_config.d/auth.conf
         ChallengeResponseAuthentication no
         GSSAPIAuthentication no
         KbdInteractiveAuthentication no

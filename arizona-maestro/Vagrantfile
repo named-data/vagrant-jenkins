@@ -1,6 +1,8 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+Vagrant.require_version ">= 2.4.0"
+
 authorized_keys = [
   # Jenkins controller public key
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG21+L2op3VAN+Te+X78FUIBmmHSFN61hh0TkmF2PatW jenkins@ndn-jenkins",
@@ -82,8 +84,8 @@ agents = [
   [31890, "centos9",          "generic/centos9s",     "vm1",  $centos_provisioning],
   [31891, "centos9",          "generic/centos9s",     "vm2",  $centos_provisioning],
 
-  [31810, "debian11-i386",    "generic-x32/debian11", "vm1",  $debian11_provisioning],
-  [31811, "debian11-i386",    "generic-x32/debian11", "vm2",  $debian11_provisioning],
+  [31810, "debian11-i386",    "generic/debian11",     "vm1",  $debian11_provisioning],
+  [31811, "debian11-i386",    "generic/debian11",     "vm2",  $debian11_provisioning],
 
   [31870, "debian12",         "bento/debian-12",      "vm1",  $debian12_provisioning],
   [31871, "debian12",         "bento/debian-12",      "vm2",  $debian12_provisioning],
@@ -106,6 +108,7 @@ Vagrant.configure("2") do |config|
 
     config.vm.define "agent-#{vmid}" do |node|
       node.vm.box = agent[2]
+      node.vm.box_architecture = agent[1].include?("-i386") ? "i386" : "amd64"
       node.vm.hostname = vmid.delete "^0-9A-Za-z-"
       node.vm.network "forwarded_port", guest: 22, host: agent[0], id: "ssh"
 

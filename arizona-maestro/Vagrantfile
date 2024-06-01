@@ -34,7 +34,7 @@ $debian11_provisioning = <<~'EOF'
   export DEBIAN_FRONTEND=noninteractive
   apt-get -qq update
   apt-get -qy dist-upgrade
-  apt-get -qy install git openjdk-17-jre-headless nano
+  apt-get -qyV install git openjdk-17-jre-headless nano
   # Cleanup
   apt-get -qy autoremove
 EOF
@@ -44,7 +44,7 @@ $debian12_provisioning = <<~'EOF'
   export DEBIAN_FRONTEND=noninteractive
   apt-get -qq update
   apt-get -qy dist-upgrade
-  apt-get -qy install git openjdk-17-jre-headless nano
+  apt-get -qyV install git openjdk-17-jre-headless nano
   # Cleanup
   apt-get -qy autoremove
 EOF
@@ -56,7 +56,7 @@ $ubuntu20_provisioning = <<~'EOF'
   export DEBIAN_FRONTEND=noninteractive
   apt-get -qq update
   apt-get -qy dist-upgrade
-  apt-get -qy install git openjdk-17-jre-headless nano
+  apt-get -qyV install git openjdk-17-jre-headless nano
   # Cleanup
   apt-get -qy autoremove
 EOF
@@ -75,7 +75,7 @@ $ubuntu22_provisioning = <<~'EOF'
   export DEBIAN_FRONTEND=noninteractive
   apt-get -qq update
   apt-get -qy dist-upgrade
-  apt-get -qy install git openjdk-17-jre-headless nano
+  apt-get -qyV install git openjdk-21-jre-headless nano
   # Cleanup
   apt-get -qy autoremove
 EOF

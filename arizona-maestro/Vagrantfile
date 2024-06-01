@@ -37,6 +37,7 @@ $debian11_provisioning = <<~'EOF'
   apt-get -qyV install git openjdk-17-jre-headless nano
   # Cleanup
   apt-get -qy autoremove
+  apt-get -qy clean
 EOF
 
 $debian12_provisioning = <<~'EOF'
@@ -47,6 +48,7 @@ $debian12_provisioning = <<~'EOF'
   apt-get -qyV install git openjdk-17-jre-headless nano
   # Cleanup
   apt-get -qy autoremove
+  apt-get -qy clean
 EOF
 
 $ubuntu20_provisioning = <<~'EOF'
@@ -59,6 +61,7 @@ $ubuntu20_provisioning = <<~'EOF'
   apt-get -qyV install git openjdk-17-jre-headless nano
   # Cleanup
   apt-get -qy autoremove
+  apt-get -qy clean
 EOF
 
 $ubuntu22_provisioning = <<~'EOF'
@@ -78,6 +81,19 @@ $ubuntu22_provisioning = <<~'EOF'
   apt-get -qyV install git openjdk-21-jre-headless nano
   # Cleanup
   apt-get -qy autoremove
+  apt-get -qy clean
+EOF
+
+$ubuntu24_provisioning = <<~'EOF'
+  # Use a faster mirror
+  sed -i -Ee '/^URIs:/s,//archive\.ubuntu\.com,//mirror.arizona.edu,' /etc/apt/sources.list.d/ubuntu.sources
+  # Upgrade everything and install what we need
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get -qyU dist-upgrade
+  apt-get -qyV install git openjdk-21-jre-headless nano
+  # Cleanup
+  apt-get -qy autoremove
+  apt-get -qy clean
 EOF
 
 agents = [
@@ -96,6 +112,9 @@ agents = [
   [31880, "ubuntu22.04",      "generic/ubuntu2204",   "vm2",  $ubuntu22_provisioning],
   [31881, "ubuntu22.04",      "generic/ubuntu2204",   "vm1",  $ubuntu22_provisioning],
   [31888, "ubuntu22.04-docs", "generic/ubuntu2204",   "vm2",  $ubuntu22_provisioning],
+
+  [31840, "ubuntu24.04",      "bento/ubuntu-24.04",   "vm2",  $ubuntu24_provisioning],
+  [31841, "ubuntu24.04",      "bento/ubuntu-24.04",   "vm1",  $ubuntu24_provisioning],
 ]
 
 Vagrant.configure("2") do |config|
@@ -153,7 +172,7 @@ Vagrant.configure("2") do |config|
         PubkeyAuthentication yes
         PermitRootLogin no
         EOF
-        systemctl reload-or-restart sshd.service
+        systemctl reload-or-restart ssh.service || systemctl reload-or-restart sshd.service
 
         echo -e "\\U1F511 SSH host key: $(cut -d' ' -f-2 /etc/ssh/ssh_host_ed25519_key.pub)"
       SHELL

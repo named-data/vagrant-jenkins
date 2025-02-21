@@ -15,7 +15,7 @@ $centos_provisioning = <<~'EOF'
   dnf -y remove firewalld
   # Upgrade everything and install what we need
   dnf -y upgrade
-  dnf -y install git java-17-openjdk-headless nano
+  dnf -y install git java-21-openjdk-headless nano
   # Cleanup
   dnf -y autoremove
 EOF

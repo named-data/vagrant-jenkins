@@ -51,19 +51,6 @@ $debian12_provisioning = <<~'EOF'
   apt-get -qy clean
 EOF
 
-$ubuntu20_provisioning = <<~'EOF'
-  # Use a faster mirror
-  sed -i -Ee 's,//\w+\.archive\.ubuntu\.com,//mirror.arizona.edu,' /etc/apt/sources.list
-  # Upgrade everything and install what we need
-  export DEBIAN_FRONTEND=noninteractive
-  apt-get -qq update
-  apt-get -qy dist-upgrade
-  apt-get -qyV install git openjdk-17-jre-headless nano
-  # Cleanup
-  apt-get -qy autoremove
-  apt-get -qy clean
-EOF
-
 $ubuntu22_provisioning = <<~'EOF'
   # Do not disable IPv6
   sed -i -ne '/\<disable_ipv6\>/!p; $a net.ipv6.conf.all.disable_ipv6 = 0' /etc/sysctl.conf
@@ -105,9 +92,6 @@ agents = [
 
   [31870, "debian12",         "bento/debian-12",      "vm1",  $debian12_provisioning],
   [31871, "debian12",         "bento/debian-12",      "vm2",  $debian12_provisioning],
-
-  [31820, "ubuntu20.04",      "bento/ubuntu-20.04",   "vm2",  $ubuntu20_provisioning],
-  [31821, "ubuntu20.04",      "bento/ubuntu-20.04",   "vm1",  $ubuntu20_provisioning],
 
   [31880, "ubuntu22.04",      "generic/ubuntu2204",   "vm2",  $ubuntu22_provisioning],
   [31881, "ubuntu22.04",      "generic/ubuntu2204",   "vm1",  $ubuntu22_provisioning],

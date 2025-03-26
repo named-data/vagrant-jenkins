@@ -111,10 +111,10 @@ agents = [
 
   [31880, "ubuntu22.04",      "generic/ubuntu2204",   "vm2",  $ubuntu22_provisioning],
   [31881, "ubuntu22.04",      "generic/ubuntu2204",   "vm1",  $ubuntu22_provisioning],
-  [31888, "ubuntu22.04-docs", "generic/ubuntu2204",   "vm2",  $ubuntu22_provisioning],
 
   [31840, "ubuntu24.04",      "bento/ubuntu-24.04",   "vm2",  $ubuntu24_provisioning],
   [31841, "ubuntu24.04",      "bento/ubuntu-24.04",   "vm1",  $ubuntu24_provisioning],
+  [31844, "ubuntu24.04-docs", "bento/ubuntu-24.04",   "vm2",  $ubuntu24_provisioning],
 ]
 
 Vagrant.configure("2") do |config|

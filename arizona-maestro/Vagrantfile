@@ -83,22 +83,38 @@ $ubuntu24_provisioning = <<~'EOF'
   apt-get -qy clean
 EOF
 
+$ubuntu25_provisioning = <<~'EOF'
+  # Restore sanity
+  rm /etc/profile.d/pipx.sh
+  # Use a faster mirror
+  sed -i -Ee '/^URIs:/s,//archive\.ubuntu\.com,//mirror.arizona.edu,' /etc/apt/sources.list.d/ubuntu.sources
+  # Upgrade everything and install what we need
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get -qyU dist-upgrade
+  apt-get -qyV install git openjdk-21-jre-headless nano
+  # Cleanup
+  apt-get -qy autoremove
+  apt-get -qy clean
+EOF
+
 agents = [
-  [31890, "centos9",          "generic/centos9s",     "vm1",  $centos_provisioning],
-  [31891, "centos9",          "generic/centos9s",     "vm2",  $centos_provisioning],
+  [31890, "centos9",          "generic/centos9s",       "vm1",  $centos_provisioning],
+  [31891, "centos9",          "generic/centos9s",       "vm2",  $centos_provisioning],
 
-  [31810, "debian11-i386",    "generic/debian11",     "vm1",  $debian11_provisioning],
-  [31811, "debian11-i386",    "generic/debian11",     "vm2",  $debian11_provisioning],
+  [31810, "debian11-i386",    "generic/debian11",       "vm1",  $debian11_provisioning],
+  [31811, "debian11-i386",    "generic/debian11",       "vm2",  $debian11_provisioning],
 
-  [31870, "debian12",         "bento/debian-12",      "vm1",  $debian12_provisioning],
-  [31871, "debian12",         "bento/debian-12",      "vm2",  $debian12_provisioning],
+  [31870, "debian12",         "bento/debian-12",        "vm1",  $debian12_provisioning],
+  [31871, "debian12",         "bento/debian-12",        "vm2",  $debian12_provisioning],
 
-  [31880, "ubuntu22.04",      "generic/ubuntu2204",   "vm2",  $ubuntu22_provisioning],
-  [31881, "ubuntu22.04",      "generic/ubuntu2204",   "vm1",  $ubuntu22_provisioning],
+  [31880, "ubuntu22.04",      "generic/ubuntu2204",     "vm2",  $ubuntu22_provisioning],
+  [31881, "ubuntu22.04",      "generic/ubuntu2204",     "vm1",  $ubuntu22_provisioning],
 
-  [31840, "ubuntu24.04",      "bento/ubuntu-24.04",   "vm2",  $ubuntu24_provisioning],
-  [31841, "ubuntu24.04",      "bento/ubuntu-24.04",   "vm1",  $ubuntu24_provisioning],
-  [31844, "ubuntu24.04-docs", "bento/ubuntu-24.04",   "vm2",  $ubuntu24_provisioning],
+  [31840, "ubuntu24.04",      "bento/ubuntu-24.04",     "vm2",  $ubuntu24_provisioning],
+  [31841, "ubuntu24.04",      "bento/ubuntu-24.04",     "vm1",  $ubuntu24_provisioning],
+  [31844, "ubuntu24.04-docs", "bento/ubuntu-24.04",     "vm1",  $ubuntu24_provisioning],
+
+  [31850, "ubuntu24.10",      "alvistack/ubuntu-24.10", "vm2",  $ubuntu25_provisioning],
 ]
 
 Vagrant.configure("2") do |config|
@@ -111,21 +127,23 @@ Vagrant.configure("2") do |config|
 
     config.vm.define "agent-#{vmid}" do |node|
       node.vm.box = agent[2]
-      node.vm.box_architecture = agent[1].include?("-i386") ? "i386" : "amd64"
+      node.vm.box_architecture = agent[1].end_with?("-i386") ? "i386" : "amd64"
       node.vm.hostname = vmid.delete "^0-9A-Za-z-"
       node.vm.network "forwarded_port", guest: 22, host: agent[0], id: "ssh"
 
       node.vm.provider "virtualbox" do |vb|
         vb.name = "agent-#{vmid}"
 
-        cpus = agent[1].include?("-docs") ? 2 : 3
+        cpus = agent[1].end_with?("-docs") ? 2 : 3
         vb.cpus = cpus
         vb.memory = 2048 * cpus
         vb.default_nic_type = "virtio"
 
         # Disable host I/O caching.
         # https://www.virtualbox.org/manual/ch05.html#iocaching
-        vb.customize "pre-boot", ["storagectl", :id, "--name", "SATA Controller", "--hostiocache", "off"]
+        vb.customize "pre-boot", ["storagectl", :id, "--name",
+                                  agent[2].start_with?("alvistack/") ? "IDE Controller" : "SATA Controller",
+                                  "--hostiocache", "off"]
 
         # Specify the folder where VirtualBox will store the machine data.
         # Warning: this is a global setting, so make sure you create one machine at a time.

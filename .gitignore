@@ -1,2 +1,4 @@
 *.log
 .vagrant/
+.vscode/
+.DS_Store

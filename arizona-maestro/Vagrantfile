@@ -112,11 +112,7 @@ $ubuntu24_provisioning = <<~'EOF'
   apt-get -qy clean
 EOF
 
-$ubuntu25_provisioning = <<~'EOF'
-  # Restore sanity
-  rm /etc/profile.d/pipx.sh
-  # Use a faster mirror
-  sed -i -Ee '/^URIs:/s,//archive\.ubuntu\.com,//mirror.arizona.edu,' /etc/apt/sources.list.d/ubuntu.sources
+$ubuntu26_provisioning = <<~'EOF'
   # Upgrade everything and install what we need
   export DEBIAN_FRONTEND=noninteractive
   apt-get -qyU dist-upgrade
@@ -143,7 +139,7 @@ agents = [
   [31841, "ubuntu24.04",      "bento/ubuntu-24.04",     "vm1",  $ubuntu24_provisioning],
   [31844, "ubuntu24.04-docs", "bento/ubuntu-24.04",     "vm1",  $ubuntu24_provisioning],
 
-  [31850, "ubuntu25.10",      "alvistack/ubuntu-25.10", "vm2",  $ubuntu25_provisioning],
+  [31863, "ubuntu26.04",      "boxomatic/ubuntu-26.04", "vm2",  $ubuntu26_provisioning],
 ]
 
 Vagrant.configure("2") do |config|
@@ -190,7 +186,7 @@ Vagrant.configure("2") do |config|
 
         mkdir -pv /home/jenkins/.ssh
         echo '#{authorized_keys.join("\n")}' >>/home/jenkins/.ssh/authorized_keys
-        chown -cR jenkins: /home/jenkins/.ssh
+        chown -cR jenkins:jenkins /home/jenkins/.ssh
         chmod -c 700 /home/jenkins/.ssh
         chmod -c 600 /home/jenkins/.ssh/authorized_keys
 
